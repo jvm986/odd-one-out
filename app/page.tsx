@@ -1,65 +1,202 @@
-import Image from "next/image";
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { createGame, joinGame } from '@/lib/actions/game'
+
+const SAVED_NAME_KEY = 'odd-one-out-player-name'
 
 export default function Home() {
+  const router = useRouter()
+  const [displayName, setDisplayName] = useState('')
+  const [gameCode, setGameCode] = useState('')
+  const [gameMode, setGameMode] = useState<'classic' | 'blind'>('classic')
+  const [isCreating, setIsCreating] = useState(false)
+  const [isJoining, setIsJoining] = useState(false)
+  const [error, setError] = useState('')
+
+  // Load saved name on mount
+  useEffect(() => {
+    const savedName = localStorage.getItem(SAVED_NAME_KEY)
+    if (savedName) {
+      setDisplayName(savedName)
+    }
+  }, [])
+
+  const handleCreateGame = async () => {
+    if (!displayName.trim()) {
+      setError('Please enter your name')
+      return
+    }
+
+    setIsCreating(true)
+    setError('')
+
+    // Save name to localStorage
+    localStorage.setItem(SAVED_NAME_KEY, displayName.trim())
+
+    const result = await createGame(displayName.trim(), gameMode)
+
+    if (result.error) {
+      setError(result.error)
+      setIsCreating(false)
+    } else if (result.gameId) {
+      router.push(`/game/${result.gameId}`)
+    }
+  }
+
+  const handleJoinGame = async () => {
+    if (!displayName.trim()) {
+      setError('Please enter your name')
+      return
+    }
+
+    if (!gameCode.trim()) {
+      setError('Please enter a game code')
+      return
+    }
+
+    setIsJoining(true)
+    setError('')
+
+    // Save name to localStorage
+    localStorage.setItem(SAVED_NAME_KEY, displayName.trim())
+
+    const result = await joinGame(gameCode.trim(), displayName.trim())
+
+    if (result.error) {
+      setError(result.error)
+      setIsJoining(false)
+    } else if (result.gameId) {
+      router.push(`/game/${result.gameId}`)
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Odd One Out
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+          <p className="text-gray-600">A multiplayer guessing game for remote teams</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Get Started</CardTitle>
+            <CardDescription>Enter your name to create or join a game</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Your Name</Label>
+              <Input
+                id="name"
+                placeholder="Enter your display name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                maxLength={50}
+              />
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>Game Mode</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={gameMode === 'classic' ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => setGameMode('classic')}
+                  >
+                    Classic
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={gameMode === 'blind' ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => setGameMode('blind')}
+                  >
+                    Blind
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  {gameMode === 'classic'
+                    ? 'The Odd One Out knows they are odd'
+                    : 'No one knows who the Odd One Out is'}
+                </p>
+              </div>
+
+              <Button
+                onClick={handleCreateGame}
+                disabled={isCreating || isJoining}
+                className="w-full"
+                size="lg"
+              >
+                {isCreating ? 'Creating...' : 'Create New Game'}
+              </Button>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="code">Game Code</Label>
+                <Input
+                  id="code"
+                  placeholder="Enter 6-character code"
+                  value={gameCode}
+                  onChange={(e) => setGameCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                />
+              </div>
+
+              <Button
+                onClick={handleJoinGame}
+                disabled={isCreating || isJoining}
+                variant="secondary"
+                className="w-full"
+                size="lg"
+              >
+                {isJoining ? 'Joining...' : 'Join Game'}
+              </Button>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-600">
+                {error}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">How to Play</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-gray-600 space-y-2">
+            <p>
+              <strong>Classic Mode:</strong> Most players get the same word, but one player (the Odd
+              One Out) gets a related but different word. The Odd One Out knows their role.
+            </p>
+            <p>
+              <strong>Blind Mode:</strong> Same as Classic, but the Odd One Out doesn&apos;t know
+              they&apos;re odd. Everyone is paranoid!
+            </p>
+            <p>
+              Submit clues, vote for who you think is odd, and score points by guessing correctly or
+              evading detection.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  );
+  )
 }

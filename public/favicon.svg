@@ -1,0 +1,23 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="32" fill="url(#gradient)"/>
+
+  <!-- Three dots representing players - two similar, one different -->
+  <!-- Regular player 1 -->
+  <circle cx="20" cy="32" r="6" fill="white" opacity="0.9"/>
+
+  <!-- Regular player 2 -->
+  <circle cx="44" cy="32" r="6" fill="white" opacity="0.9"/>
+
+  <!-- Odd one out - different color/style -->
+  <circle cx="32" cy="22" r="7" fill="#FCD34D" opacity="1"/>
+  <circle cx="32" cy="22" r="7" fill="none" stroke="white" stroke-width="2"/>
+
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333EA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563EB;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
