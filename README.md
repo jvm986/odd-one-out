@@ -41,7 +41,7 @@ Before you begin, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/jvm986/odd-one-out.git
 cd odd-one-out
 ```
 
